@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+@theme {
+  --color-bg-0: #0c0e14;
+  --color-bg-1: #11141c;
+  --color-bg-2: #181c26;
+  --color-bg-3: #1f2430;
+  --color-bg-4: #272d3a;
+
+  --color-accent: #b4f04e;
+  --color-accent-dim: #b4f04e33;
+  --color-accent-mid: #b4f04e66;
+
+  --color-green: #b4f04e;
+  --color-amber: #f0c14e;
+  --color-red: #f05e4e;
+  --color-blue: #5e9ef0;
+  --color-purple: #a87ef0;
+
+  --color-text-1: #e8ecf4;
+  --color-text-2: #8b95a8;
+  --color-text-3: #545e72;
+
+  --color-border: #232a36;
+  --color-border-bright: #333d4e;
+  --color-surface: #161a24;
+
+  --color-agent-build: #fb8147;
+  --color-agent-plan: #c7e2a8;
+  --color-agent-compose: #a7a3d8;
+
+  --font-mono: 'IBM Plex Mono', 'Menlo', monospace;
+  --font-code: 'JetBrains Mono', 'Menlo', monospace;
+  --font-ui: 'Manrope', -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-bg-0);
+  color: var(--color-text-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-bg-4); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-3); }
+
+/* ═══════════════════════════════════════════
+   NOISE OVERLAY
+   ═══════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+/* ═══════════════════════════════════════════
+   STREAMING CURSOR
+   ═══════════════════════════════════════════ */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: var(--color-accent);
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink 0.8s step-end infinite;
+}
