@@ -54,6 +54,9 @@ export interface ToolPart {
     status: 'running' | 'completed' | 'error'
     input?: Record<string, unknown>
     output?: string
+    title?: string
+    time?: { start: number; end?: number }
+    metadata?: Record<string, unknown>
   }
   id?: string
 }
@@ -88,9 +91,13 @@ export interface Agent {
 }
 
 export interface Config {
-  agents: Agent[]
-  providers: Provider[]
+  agent?: Record<string, unknown>
+  mode?: Record<string, unknown>
+  plugin?: unknown[]
+  command?: Record<string, unknown>
   username?: string
+  provider?: Record<string, unknown>
+  disabled_providers?: string[]
 }
 
 export type SSEEvent =

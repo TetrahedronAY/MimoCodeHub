@@ -15,7 +15,7 @@ export default function PartRenderer({ parts }: Props) {
           case 'text':
             return <TextPart key={i} text={part.text} />
           case 'reasoning':
-            return <ReasoningPart key={i} text={part.text} />
+            return <ReasoningPart key={i} text={part.text} time={part.time} />
           case 'tool':
             return <ToolCallPart key={i} {...part} />
           default:

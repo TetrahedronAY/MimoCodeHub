@@ -3,10 +3,20 @@ import { ChevronRight } from 'lucide-react'
 
 interface Props {
   text: string
+  time?: { start: number; end?: number }
 }
 
-export default function ReasoningPart({ text }: Props) {
+function formatDuration(time?: { start: number; end?: number }): string {
+  if (!time?.start) return ''
+  const end = time.end || Date.now()
+  const ms = end - time.start
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+export default function ReasoningPart({ text, time }: Props) {
   const [open, setOpen] = useState(false)
+  const duration = formatDuration(time)
 
   return (
     <div className="my-1.5 border border-border bg-bg-2">
@@ -21,9 +31,12 @@ export default function ReasoningPart({ text }: Props) {
         <span className="text-[9px] uppercase tracking-[0.08em] text-text-3 font-medium">
           Reasoning
         </span>
+        {duration && (
+          <span className="ml-auto text-[9px] text-text-3 tabular-nums font-code">{duration}</span>
+        )}
       </button>
       {open && (
-        <div className="px-2.5 py-2 border-t border-border text-[11px] text-text-2 italic leading-relaxed">
+        <div className="px-2.5 py-2 border-t border-border text-[11px] text-text-2 italic leading-relaxed whitespace-pre-wrap">
           {text}
         </div>
       )}

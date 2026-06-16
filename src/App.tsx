@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ConnectionDialog from './components/ConnectionDialog'
 import MessageItem from './features/chat/MessageItem'
 import MessageInput from './features/chat/MessageInput'
+import StatsView from './views/StatsView'
+import SettingsView from './views/SettingsView'
 import { useConnectionStore } from './store/connection'
 import { useSessionStore } from './store/session'
 import { useUIStore } from './store/ui'
@@ -15,6 +17,14 @@ export default function App() {
   const { sessions, currentID, fetchSessions } = useSessionStore()
   const { activeView } = useUIStore()
   const { messages, streaming, fetchMessages } = useMessageStore()
+  const chatEndRef = useRef<HTMLDivElement>(null)
+  const chatAreaRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = useCallback(() => {
+    requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    })
+  }, [])
 
   useEffect(() => {
     if (connected) fetchSessions()
@@ -24,6 +34,19 @@ export default function App() {
     if (currentID) fetchMessages(currentID)
   }, [currentID, fetchMessages])
 
+  // Auto-scroll when messages update
+  const prevMsgCount = useRef(0)
+  useEffect(() => {
+    const count = currentID ? (messages[currentID]?.length || 0) : 0
+    if (count > prevMsgCount.current) scrollToBottom()
+    prevMsgCount.current = count
+  }, [messages, currentID, scrollToBottom])
+
+  // Auto-scroll during streaming
+  useEffect(() => {
+    if (currentID && streaming[currentID]) scrollToBottom()
+  }, [streaming, currentID, scrollToBottom])
+
   // SSE: refresh messages & sessions on events
   useEffect(() => {
     return onSSEEvent((event) => {
@@ -31,11 +54,11 @@ export default function App() {
         fetchSessions()
       }
       if (event.type === 'message.updated' || event.type === 'message.part.updated') {
-        const sid = currentID
+        const sid = useSessionStore.getState().currentID
         if (sid) fetchMessages(sid)
       }
     })
-  }, [fetchSessions, fetchMessages, currentID])
+  }, [fetchSessions, fetchMessages])
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -99,9 +122,9 @@ export default function App() {
                   <span className="text-[10px] opacity-60">Send a message to start</span>
                 </div>
               ) : (
-                <div className="max-w-3xl mx-auto px-5">
+                <div ref={chatAreaRef} className="max-w-3xl mx-auto px-5">
                   {currentMessages.map((msg, i) => (
-                    <MessageItem key={i} message={msg} />
+                    <MessageItem key={`${msg.info.id}-${i}`} message={msg} />
                   ))}
                   {currentStream && (
                     <div className="py-2.5 border-b border-border last:border-0">
@@ -115,6 +138,7 @@ export default function App() {
                       </div>
                     </div>
                   )}
+                  <div ref={chatEndRef} />
                 </div>
               )}
             </div>
@@ -122,42 +146,9 @@ export default function App() {
           </div>
         )}
 
-        {activeView === 'stats' && (
-          <div className="flex-1 overflow-y-auto p-5">
-            <div className="grid grid-cols-4 gap-2 mb-5">
-              {[
-                { label: 'Total Tokens', value: '—', sub: 'Connect to load data' },
-                { label: 'Total Cost', value: '—', sub: '' },
-                { label: 'Sessions', value: String(sessions.length), sub: '' },
-                { label: 'Tool Calls', value: '—', sub: '' },
-              ].map((s) => (
-                <div key={s.label} className="bg-bg-2 border border-border p-3">
-                  <div className="text-[9px] uppercase tracking-[0.08em] text-text-3 mb-1">{s.label}</div>
-                  <div className="font-ui text-xl font-bold text-text-1">{s.value}</div>
-                  {s.sub && <div className="text-[9px] text-text-3 mt-0.5">{s.sub}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {activeView === 'stats' && <StatsView />}
 
-        {activeView === 'settings' && (
-          <div className="flex-1 overflow-y-auto p-5">
-            <div className="text-[9px] uppercase tracking-[0.1em] text-text-3 font-semibold mb-2 pb-1 border-b border-border">
-              Connection
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-border">
-              <span className="text-[11px] text-text-2">Server</span>
-              <span className="text-[11px] text-text-1 font-code">{useConnectionStore.getState().serverURL}</span>
-            </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-border">
-              <span className="text-[11px] text-text-2">Status</span>
-              <span className={`text-[9px] px-1.5 py-[2px] border ${connected ? 'border-accent text-accent' : 'border-red text-red'}`}>
-                {connected ? 'Connected' : 'Disconnected'}
-              </span>
-            </div>
-          </div>
-        )}
+        {activeView === 'settings' && <SettingsView />}
       </main>
       <ConnectionDialog />
     </div>
