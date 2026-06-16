@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { execSync } from 'child_process'
 import { readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { mimoServePlugin } from './vite-plugin-mimo-serve'
 
 function detectMimoPort(): number | null {
   // 1. Try log files
@@ -42,7 +43,7 @@ if (mimoPort) {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), mimoServePlugin()],
   server: {
     port: 5173,
     strictPort: false,
