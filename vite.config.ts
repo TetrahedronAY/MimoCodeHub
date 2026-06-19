@@ -43,6 +43,7 @@ if (mimoPort) {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [react(), tailwindcss(), mimoServePlugin()],
   server: {
     port: 5173,

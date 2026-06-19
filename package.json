@@ -1,6 +1,5 @@
 {
   "name": "mimocodehub",
-  "private": true,
   "version": "0.1.0",
   "type": "module",
   "description": "Full-featured WebUI for MimoCode CLI",
@@ -10,10 +9,19 @@
     "type": "git",
     "url": "https://github.com/logy/MimoCodeHub"
   },
+  "bin": {
+    "mimocodehub": "./bin/serve.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build:static": "tsc -b && vite build && cd dist && zip -r ../mimocodehub.zip . && cd ..",
+    "preview": "vite preview",
+    "start": "node bin/serve.js"
   },
   "dependencies": {
     "lucide-react": "^1.18.0",
