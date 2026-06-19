@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ConnectionDialog from './components/ConnectionDialog'
+import ContextMenu from './components/ContextMenu'
 import MessageItem from './features/chat/MessageItem'
 import MessageInput from './features/chat/MessageInput'
 import StatsView from './views/StatsView'
@@ -151,6 +152,7 @@ export default function App() {
         {activeView === 'settings' && <SettingsView />}
       </main>
       <ConnectionDialog />
+      <ContextMenu />
     </div>
   )
 }

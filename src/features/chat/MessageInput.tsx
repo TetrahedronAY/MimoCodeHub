@@ -3,6 +3,7 @@ import { useConnectionStore } from '../../store/connection'
 import { useSessionStore } from '../../store/session'
 import { useMessageStore } from '../../store/message'
 import { useUIStore } from '../../store/ui'
+import ModelPicker from '../../components/ModelPicker'
 
 export default function MessageInput() {
   const [text, setText] = useState('')
@@ -70,9 +71,7 @@ export default function MessageInput() {
   return (
     <div className="border-t border-border bg-bg-1 px-5 py-2.5">
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="px-1.5 py-[2px] bg-bg-3 border border-border text-text-2 text-[9px] font-medium font-code">
-          mimo-auto
-        </span>
+        <ModelPicker />
         <span className="w-px h-3 bg-border" />
         <span className="px-1.5 py-[2px] bg-bg-3 border border-border text-text-2 text-[9px] font-medium flex items-center gap-1">
           <span className={`w-[5px] h-[5px] rounded-full ${

@@ -71,7 +71,11 @@ export interface Message {
 export interface Provider {
   id: string
   name: string
-  models: Model[]
+  models: Model[] | Record<string, unknown>
+  source?: string
+  npm?: string
+  api?: string
+  env?: string[]
 }
 
 export interface Model {

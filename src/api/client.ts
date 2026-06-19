@@ -56,8 +56,8 @@ export async function getMessages(sessionID: string): Promise<Message[]> {
   return request<Message[]>(`/session/${sessionID}/message`)
 }
 
-export async function getProviders(): Promise<Provider[]> {
-  return request<Provider[]>('/provider')
+export async function getProviders(): Promise<{ all: Provider[]; connected: string[]; default: Record<string, string> }> {
+  return request('/provider')
 }
 
 export async function getConfig(): Promise<Config> {

@@ -2,6 +2,7 @@ import { useSessionStore } from '../store/session'
 import { useUIStore } from '../store/ui'
 import { useConnectionStore } from '../store/connection'
 import { Plus } from 'lucide-react'
+import { showContextMenu } from './ContextMenu'
 import type { AgentID } from '../store/ui'
 
 const agentColors: Record<AgentID, string> = {
@@ -29,7 +30,7 @@ function formatTime(ts: number): string {
 }
 
 export default function Sidebar() {
-  const { sessions, currentID, selectSession, createSession } = useSessionStore()
+  const { sessions, currentID, selectSession, createSession, fetchSessions } = useSessionStore()
   const { connected, serverURL } = useConnectionStore()
   const { setView } = useUIStore()
 
@@ -83,6 +84,50 @@ export default function Sidebar() {
           <button
             key={s.id}
             onClick={() => { selectSession(s.id); setView('chat') }}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              showContextMenu(e.clientX, e.clientY, [
+                {
+                  label: 'Open',
+                  icon: '→',
+                  onClick: () => { selectSession(s.id); setView('chat') },
+                },
+                {
+                  label: 'Copy ID',
+                  icon: '⊞',
+                  shortcut: '⌘C',
+                  onClick: () => navigator.clipboard.writeText(s.id),
+                },
+                {
+                  label: 'Export as JSON',
+                  icon: '↓',
+                  onClick: async () => {
+                    const base = useConnectionStore.getState().serverURL
+                    const res = await fetch(`${base}/session/${s.id}/message`)
+                    const data = await res.json()
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${s.title || s.id}.json`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  },
+                },
+                { label: '', onClick: () => {} }, // separator
+                {
+                  label: 'Delete',
+                  icon: '✕',
+                  danger: true,
+                  onClick: async () => {
+                    if (!confirm(`Delete session "${s.title || s.id}"?`)) return
+                    const base = useConnectionStore.getState().serverURL
+                    await fetch(`${base}/session/${s.id}`, { method: 'DELETE' })
+                    fetchSessions()
+                  },
+                },
+              ])
+            }}
             className={`w-full text-left flex flex-col px-3.5 py-[5px] border-l-2 cursor-pointer transition-colors gap-0.5 bg-transparent border-0 border-l-solid ${
               currentID === s.id
                 ? 'bg-bg-2 border-l-accent'
