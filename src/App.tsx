@@ -1,4 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ConnectionDialog from './components/ConnectionDialog'
@@ -12,6 +14,15 @@ import { useSessionStore } from './store/session'
 import { useUIStore } from './store/ui'
 import { useMessageStore } from './store/message'
 import { onSSEEvent } from './api/sse'
+
+function StreamingMarkdown({ text }: { text: string }) {
+  return (
+    <>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+      <span className="streaming-cursor" />
+    </>
+  )
+}
 
 export default function App() {
   const { connected } = useConnectionStore()
@@ -134,8 +145,15 @@ export default function App() {
                           assistant
                         </span>
                       </div>
-                      <div className="text-xs text-text-1 leading-relaxed">
-                        {currentStream}<span className="streaming-cursor" />
+                      <div className="text-xs text-text-1 leading-relaxed
+                        [&_p]:mb-2 [&_p:last-child]:mb-0
+                        [&_code]:font-code [&_code]:text-[11px] [&_code]:px-1 [&_code]:py-[1px] [&_code]:bg-bg-3 [&_code]:border [&_code]:border-border [&_code]:text-accent
+                        [&_pre]:bg-bg-1 [&_pre]:border [&_pre]:border-border [&_pre]:p-2.5 [&_pre]:my-2 [&_pre]:overflow-x-auto
+                        [&_pre_code]:bg-transparent [&_pre_code]:border-0 [&_pre_code]:p-0 [&_pre_code]:text-text-2
+                        [&_ul]:my-1 [&_ul]:pl-4 [&_ol]:my-1 [&_ol]:pl-4
+                        [&_li]:my-0.5
+                      ">
+                        <StreamingMarkdown text={currentStream} />
                       </div>
                     </div>
                   )}

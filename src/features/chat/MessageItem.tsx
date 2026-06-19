@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import type { Message } from '../../api/types'
 import PartRenderer from './PartRenderer'
 import { showContextMenu } from '../../components/ContextMenu'
+import { Copy, Check, RotateCcw } from 'lucide-react'
 
 interface Props {
   message: Message
+  onRegenerate?: () => void
 }
 
 const roleStyles: Record<string, string> = {
@@ -33,19 +36,25 @@ function getTextContent(parts: Message['parts']): string {
     .join('\n')
 }
 
-export default function MessageItem({ message }: Props) {
+export default function MessageItem({ message, onRegenerate }: Props) {
   const { info, parts } = message
+  const [copied, setCopied] = useState(false)
+  const isAssistant = info.role === 'assistant'
+  const textContent = getTextContent(parts)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(textContent || JSON.stringify(parts, null, 2))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
-    const textContent = getTextContent(parts)
     showContextMenu(e.clientX, e.clientY, [
       {
         label: 'Copy text',
         icon: '📋',
-        onClick: () => {
-          if (textContent) navigator.clipboard.writeText(textContent)
-        },
+        onClick: handleCopy,
         disabled: !textContent,
       },
       {
@@ -53,20 +62,17 @@ export default function MessageItem({ message }: Props) {
         icon: '⊞',
         onClick: () => navigator.clipboard.writeText(info.id),
       },
-      {
-        label: 'Copy model',
-        icon: '⟡',
-        onClick: () => {
-          if (info.model) navigator.clipboard.writeText(formatModel(info.model))
-        },
-        disabled: !info.model,
-      },
+      ...(isAssistant && onRegenerate ? [{
+        label: 'Regenerate',
+        icon: '↻',
+        onClick: onRegenerate,
+      }] : []),
     ])
   }
 
   return (
     <div
-      className="py-2.5 border-b border-border last:border-0"
+      className="group/py-2.5 py-2.5 border-b border-border last:border-0 relative"
       onContextMenu={handleContextMenu}
     >
       <div className="flex items-center gap-2 mb-1.5">
@@ -91,6 +97,26 @@ export default function MessageItem({ message }: Props) {
         </span>
       </div>
       <PartRenderer parts={parts} />
+
+      {/* Hover actions */}
+      <div className="absolute top-2 right-0 hidden group-hover/py-2.5:flex items-center gap-0.5 opacity-0 group-hover/py-2.5:opacity-100 transition-opacity">
+        <button
+          onClick={handleCopy}
+          className="p-1 text-text-3 hover:text-text-1 hover:bg-bg-3 transition-colors bg-transparent border-0 cursor-pointer"
+          title="Copy"
+        >
+          {copied ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+        </button>
+        {isAssistant && onRegenerate && (
+          <button
+            onClick={onRegenerate}
+            className="p-1 text-text-3 hover:text-text-1 hover:bg-bg-3 transition-colors bg-transparent border-0 cursor-pointer"
+            title="Regenerate"
+          >
+            <RotateCcw size={12} />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

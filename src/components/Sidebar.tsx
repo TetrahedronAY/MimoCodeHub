@@ -32,7 +32,7 @@ function formatTime(ts: number): string {
 export default function Sidebar() {
   const { sessions, currentID, selectSession, createSession, fetchSessions } = useSessionStore()
   const { connected, serverURL } = useConnectionStore()
-  const { setView, currentModel } = useUIStore()
+  const { setView } = useUIStore()
 
   const handleNewSession = async () => {
     try {
@@ -153,10 +153,8 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="border-t border-border px-3.5 py-2">
         <div className="flex items-center gap-1.5 text-[10px] text-text-3">
-          <span>Model</span>
-          <span className="px-1.5 py-[2px] bg-bg-3 border border-border text-text-2 text-[9px] font-medium">
-            {currentModel}
-          </span>
+          <span className="w-[5px] h-[5px] rounded-full bg-green" />
+          <span>mimo serve</span>
         </div>
       </div>
     </aside>
