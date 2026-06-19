@@ -63,7 +63,7 @@ export default function StatsView() {
         <div className="bg-bg-2 border border-border p-3">
           <div className="text-[9px] uppercase tracking-[0.08em] text-text-3 mb-1">Total Cost</div>
           <div className="font-ui text-xl font-bold text-text-1">${stats.totalCost.toFixed(2)}</div>
-          <div className="text-[9px] text-text-3 mt-0.5">MiMo Auto (free)</div>
+          <div className="text-[9px] text-text-3 mt-0.5">{stats.totalCost === 0 ? 'Free tier' : 'Accumulated cost'}</div>
         </div>
         <div className="bg-bg-2 border border-border p-3">
           <div className="text-[9px] uppercase tracking-[0.08em] text-text-3 mb-1">Sessions</div>

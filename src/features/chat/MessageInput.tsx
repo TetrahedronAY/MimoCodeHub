@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useConnectionStore } from '../../store/connection'
 import { useSessionStore } from '../../store/session'
 import { useMessageStore } from '../../store/message'
@@ -8,10 +8,19 @@ import ModelPicker from '../../components/ModelPicker'
 export default function MessageInput() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { connected } = useConnectionStore()
   const { currentID } = useSessionStore()
   const { activeAgent } = useUIStore()
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current
@@ -24,6 +33,7 @@ export default function MessageInput() {
     if (!text.trim() || !currentID || sending || !connected) return
     const msg = text.trim()
     setText('')
+    setError('')
     setSending(true)
     textareaRef.current?.focus()
 
@@ -37,8 +47,11 @@ export default function MessageInput() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
+      // Clear any existing polling
+      if (pollRef.current) clearInterval(pollRef.current)
+
       // Poll for new messages after sending
-      const pollInterval = setInterval(async () => {
+      pollRef.current = setInterval(async () => {
         try {
           const msgRes = await fetch(`${base}/session/${currentID}/message`)
           if (msgRes.ok) {
@@ -53,9 +66,16 @@ export default function MessageInput() {
       }, 1000)
 
       // Stop polling after 30 seconds
-      setTimeout(() => clearInterval(pollInterval), 30000)
+      setTimeout(() => {
+        if (pollRef.current) {
+          clearInterval(pollRef.current)
+          pollRef.current = null
+        }
+      }, 30000)
     } catch (err) {
-      console.error('Send failed:', err)
+      // Restore input on failure so user doesn't lose their message
+      setText(msg)
+      setError(err instanceof Error ? err.message : 'Send failed')
     } finally {
       setSending(false)
     }
@@ -82,11 +102,16 @@ export default function MessageInput() {
           {activeAgent}
         </span>
       </div>
+      {error && (
+        <div className="mb-1.5 px-2 py-1 bg-red/10 border border-red/30 text-red text-[10px]">
+          {error}
+        </div>
+      )}
       <div className="flex items-end gap-2 border border-border bg-bg-2 px-2.5 py-2 focus-within:border-accent focus-within:shadow-[0_0_0_1px_rgba(180,240,78,0.2)] transition-colors">
         <textarea
           ref={textareaRef}
           value={text}
-          onChange={(e) => { setText(e.target.value); autoResize() }}
+          onChange={(e) => { setText(e.target.value); setError(''); autoResize() }}
           onKeyDown={handleKeyDown}
           placeholder={connected ? 'Send a message...' : 'Connect to server first...'}
           rows={1}

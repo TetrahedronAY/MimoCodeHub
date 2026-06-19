@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
 import { useConnectionStore } from '../store/connection'
 import { useSessionStore } from '../store/session'
+import { useUIStore } from '../store/ui'
 import { getProviders } from '../api/client'
 
 interface ModelInfo {
@@ -14,10 +15,10 @@ interface ModelInfo {
 export default function ModelPicker() {
   const [open, setOpen] = useState(false)
   const [models, setModels] = useState<ModelInfo[]>([])
-  const [current, setCurrent] = useState('mimo-auto')
   const ref = useRef<HTMLDivElement>(null)
   const { connected } = useConnectionStore()
   const { currentID } = useSessionStore()
+  const { currentModel, setModel } = useUIStore()
 
   useEffect(() => {
     if (!connected) return
@@ -52,7 +53,7 @@ export default function ModelPicker() {
 
   const handleSelect = async (model: ModelInfo) => {
     const fullID = `${model.providerID}/${model.modelID}`
-    setCurrent(model.modelID)
+    setModel(model.modelID)
     setOpen(false)
 
     // Update session model via PATCH
@@ -68,10 +69,8 @@ export default function ModelPicker() {
     }
   }
 
-  const currentModel = models.find((m) => m.modelID === current)
-  const displayLabel = currentModel
-    ? `${currentModel.modelName}`
-    : current
+  const matchedModel = models.find((m) => m.modelID === currentModel)
+  const displayLabel = matchedModel ? matchedModel.modelName : currentModel
 
   return (
     <div ref={ref} className="relative">
@@ -96,13 +95,13 @@ export default function ModelPicker() {
                 key={`${m.providerID}/${m.modelID}`}
                 onClick={() => handleSelect(m)}
                 className={`w-full text-left flex items-center gap-2 px-3 py-[5px] text-[11px] cursor-pointer transition-colors border-0 bg-transparent ${
-                  m.modelID === current
+                  m.modelID === currentModel
                     ? 'text-accent bg-accent-dim'
                     : 'text-text-1 hover:bg-bg-2'
                 }`}
               >
-                {m.modelID === current && <Check size={10} className="text-accent shrink-0" />}
-                <span className={m.modelID !== current ? 'ml-[18px]' : ''}>
+                {m.modelID === currentModel && <Check size={10} className="text-accent shrink-0" />}
+                <span className={m.modelID !== currentModel ? 'ml-[18px]' : ''}>
                   <span className="font-medium">{m.modelName}</span>
                   <span className="ml-1.5 text-[9px] text-text-3">{m.providerName}</span>
                 </span>
