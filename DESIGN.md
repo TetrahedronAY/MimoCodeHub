@@ -4,7 +4,17 @@
 
 MimoCode CLI (`mimo`) 的独立全功能 WebUI 平台。通过 HTTP REST API + SSE 连接 `mimo serve` 后端，提供 AI 对话、Session 管理、统计面板、设置管理等功能。
 
+**作者**：logy (895812718@qq.com)
+**协议**：MIT
+**仓库**：https://github.com/logy/MimoCodeWebUI
 **设计方向**：Terminal Brutalism — 终端美学与现代 Web UI 的融合。信息密集、极简、键盘驱动。像一台高性能仪器，而非消费级产品。
+
+### 发布规范
+
+- 本地开发：小迭代直接提交到 main
+- 对外发布：阶段性版本打 tag（如 `v0.1.0`），推送前与用户确认
+- 提交信息格式：`<type>: <description>`（type: feat/fix/style/refactor/docs）
+- 所有对外变更（push、tag、release）必须经用户确认后执行
 
 ---
 

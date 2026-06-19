@@ -3,6 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "description": "Full-featured WebUI for MimoCode CLI",
+  "author": "logy <895812718@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/logy/MimoCodeWebUI"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

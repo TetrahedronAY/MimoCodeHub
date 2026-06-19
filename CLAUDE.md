@@ -4,6 +4,16 @@
 
 MimoCode CLI 的独立全功能 WebUI，通过 HTTP REST + SSE 连接 `mimo serve` 后端。
 
+- **作者**：logy (895812718@qq.com)
+- **协议**：MIT
+- **仓库**：https://github.com/logy/MimoCodeWebUI
+
+## 协作规范
+
+- 所有对外变更（push、tag、release）必须经用户确认后执行
+- 小迭代直接提交到 main，阶段性版本打 tag 发布
+- 提交信息格式：`feat:` / `fix:` / `docs:` / `refactor:` + 中文简述
+
 ## 技术栈
 
 - React 19 + TypeScript + Vite

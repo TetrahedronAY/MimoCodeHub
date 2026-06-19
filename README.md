@@ -2,6 +2,8 @@
 
 MimoCode CLI (`mimo`) 的独立全功能 WebUI 平台，通过 HTTP REST + SSE 连接 `mimo serve` 后端。
 
+**作者**：logy | **协议**：MIT | **仓库**：https://github.com/logy/MimoCodeWebUI
+
 ## 功能
 
 - **AI 对话** — 流式输出、Markdown 实时渲染、代码块语法高亮
