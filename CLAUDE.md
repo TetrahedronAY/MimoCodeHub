@@ -1,4 +1,4 @@
-# MimoCode WebUI
+# MimoCodeHub
 
 ## 项目概述
 
@@ -6,7 +6,7 @@ MimoCode CLI 的独立全功能 WebUI，通过 HTTP REST + SSE 连接 `mimo serv
 
 - **作者**：logy (895812718@qq.com)
 - **协议**：MIT
-- **仓库**：https://github.com/logy/MimoCodeWebUI
+- **仓库**：https://github.com/logy/MimoCodeHub
 
 ## 协作规范
 

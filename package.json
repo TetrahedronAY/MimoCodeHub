@@ -1,5 +1,5 @@
 {
-  "name": "mimocode-webui",
+  "name": "mimocodehub",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/logy/MimoCodeWebUI"
+    "url": "https://github.com/logy/MimoCodeHub"
   },
   "scripts": {
     "dev": "vite",

@@ -1,4 +1,4 @@
-# MimoCode WebUI 设计文档
+# MimoCodeHub 设计文档
 
 ## 1. 项目定位
 
@@ -6,7 +6,7 @@ MimoCode CLI (`mimo`) 的独立全功能 WebUI 平台。通过 HTTP REST API + S
 
 **作者**：logy (895812718@qq.com)
 **协议**：MIT
-**仓库**：https://github.com/logy/MimoCodeWebUI
+**仓库**：https://github.com/logy/MimoCodeHub
 **设计方向**：Terminal Brutalism — 终端美学与现代 Web UI 的融合。信息密集、极简、键盘驱动。像一台高性能仪器，而非消费级产品。
 
 ### 发布规范
