@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from 'child_process'
+import { spawn, execSync, type ChildProcess } from 'child_process'
 import type { Plugin } from 'vite'
 
 let mimoProcess: ChildProcess | null = null
@@ -8,6 +8,85 @@ export function mimoServePlugin(): Plugin {
   return {
     name: 'mimo-serve',
     configureServer(server) {
+      // Install mimo CLI endpoint
+      server.middlewares.use('/api/install-mimo', (req, res) => {
+        if (req.method !== 'POST') {
+          res.writeHead(405)
+          res.end()
+          return
+        }
+
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        })
+
+        const send = (msg: string) => {
+          res.write(`data: ${JSON.stringify({ message: msg })}\n\n`)
+        }
+
+        send('Running: npm install -g @mimo-ai/cli ...')
+
+        const install = spawn('npm', ['install', '-g', '@mimo-ai/cli'], {
+          stdio: ['ignore', 'pipe', 'pipe'],
+        })
+
+        install.stdout?.on('data', (chunk: Buffer) => send(chunk.toString().trim()))
+        install.stderr?.on('data', (chunk: Buffer) => send(chunk.toString().trim()))
+
+        install.on('close', (code) => {
+          if (code === 0) {
+            send('MimoCode CLI installed successfully!')
+            res.write(`data: ${JSON.stringify({ ok: true })}\n\n`)
+          } else {
+            send(`Installation failed (exit code ${code})`)
+            res.write(`data: ${JSON.stringify({ ok: false, error: `Exit code ${code}` })}\n\n`)
+          }
+          res.end()
+        })
+
+        install.on('error', (err) => {
+          send(`Error: ${err.message}`)
+          res.write(`data: ${JSON.stringify({ ok: false, error: err.message })}\n\n`)
+          res.end()
+        })
+      })
+
+      // Environment check endpoint
+      server.middlewares.use('/api/check-env', (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+
+        const result = { node: '', mimo: '', mimoVersion: '', serveRunning: false }
+
+        // Check Node.js
+        try {
+          result.node = execSync('node --version', { encoding: 'utf-8', timeout: 3000 }).trim()
+        } catch { result.node = '' }
+
+        // Check mimo CLI
+        try {
+          result.mimo = execSync('which mimo', { encoding: 'utf-8', timeout: 3000 }).trim()
+          try {
+            result.mimoVersion = execSync('mimo --version', { encoding: 'utf-8', timeout: 3000 }).trim()
+          } catch { result.mimoVersion = '' }
+        } catch { result.mimo = '' }
+
+        // Check if mimo serve is running on common ports
+        for (const port of [4096, 19880]) {
+          try {
+            execSync(`curl -s -o /dev/null -w "%{http_code}" --connect-timeout 1 http://127.0.0.1:${port}/config`, {
+              encoding: 'utf-8',
+              timeout: 2000,
+            })
+            result.serveRunning = true
+            break
+          } catch { /* not running on this port */ }
+        }
+
+        res.end(JSON.stringify(result))
+      })
+
       server.middlewares.use('/api/start-server', (req, res) => {
         if (req.method !== 'POST') {
           res.writeHead(405)
