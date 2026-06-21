@@ -1,6 +1,6 @@
 {
   "name": "mimocodehub",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Full-featured WebUI for MimoCode CLI",
   "author": "logy <895812718@qq.com>",
