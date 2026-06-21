@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useConnectionStore } from '../store/connection'
+import { useThemeStore, themes, accentColors } from '../store/theme'
 import { getConfig, getAgents } from '../api/client'
 import type { Config, Agent } from '../api/types'
 
@@ -16,6 +17,9 @@ export default function SettingsView() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 max-w-2xl">
+      {/* Appearance */}
+      <AppearanceSection />
+
       {/* Connection */}
       <Section title="Connection">
         <Row label="Server" value={serverURL.replace(/^https?:\/\//, '')} />
@@ -60,6 +64,51 @@ export default function SettingsView() {
         </Section>
       )}
     </div>
+  )
+}
+
+function AppearanceSection() {
+  const { currentThemeID, currentAccent, setTheme, setAccent } = useThemeStore()
+
+  return (
+    <Section title="Appearance">
+      <div className="flex items-center justify-between py-1.5 border-b border-border">
+        <span className="text-[11px] text-text-2">Theme</span>
+        <div className="flex gap-1">
+          {themes.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTheme(t.id)}
+              className={`px-2 py-[3px] text-[10px] font-mono border cursor-pointer transition-colors ${
+                currentThemeID === t.id
+                  ? 'border-accent text-accent bg-accent-dim'
+                  : 'border-border text-text-3 bg-transparent hover:border-border-bright hover:text-text-2'
+              }`}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between py-1.5">
+        <span className="text-[11px] text-text-2">Accent Color</span>
+        <div className="flex gap-1.5">
+          {accentColors.map((c) => (
+            <button
+              key={c.label}
+              onClick={() => setAccent(c.value)}
+              className={`w-5 h-5 border-2 cursor-pointer transition-all ${
+                currentAccent === c.value
+                  ? 'border-text-1 scale-110'
+                  : 'border-transparent hover:border-border-bright'
+              }`}
+              style={{ background: c.value ? `var(--${c.value === 'default' ? 'accent' : c.value})` : 'var(--accent)' }}
+              title={c.label}
+            />
+          ))}
+        </div>
+      </div>
+    </Section>
   )
 }
 
