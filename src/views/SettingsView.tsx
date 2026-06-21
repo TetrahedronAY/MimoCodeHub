@@ -51,7 +51,7 @@ export default function SettingsView() {
                   {a.name}
                 </span>
               }
-              value={a.description?.slice(0, 50) || a.name}
+              value={a.description || a.name}
             />
           ))}
         </Section>
@@ -102,7 +102,7 @@ function AppearanceSection() {
                   ? 'border-text-1 scale-110'
                   : 'border-transparent hover:border-border-bright'
               }`}
-              style={{ background: c.value ? `var(--${c.value === 'default' ? 'accent' : c.value})` : 'var(--accent)' }}
+              style={{ background: c.value ? `var(--color-${c.value === 'default' ? 'accent' : c.value})` : 'var(--color-accent)' }}
               title={c.label}
             />
           ))}
@@ -133,18 +133,18 @@ function Row({
   badge?: 'active' | 'error'
 }) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
-      <span className="text-[11px] text-text-2">{label}</span>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-4 py-1.5 border-b border-border last:border-0">
+      <span className="text-[11px] text-text-2 shrink-0">{label}</span>
+      <div className="flex items-center gap-2 min-w-0">
         {badge && (
-          <span className={`text-[9px] px-1.5 py-[2px] border ${
+          <span className={`text-[9px] px-1.5 py-[2px] border shrink-0 ${
             badge === 'active' ? 'border-accent text-accent' : 'border-red text-red'
           }`}>
             {value}
           </span>
         )}
         {!badge && (
-          <span className="text-[11px] text-text-1 font-code">{value}</span>
+          <span className="text-[11px] text-text-1 font-code text-right break-words">{value}</span>
         )}
       </div>
     </div>
