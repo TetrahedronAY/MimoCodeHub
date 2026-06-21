@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useConnectionStore } from '../store/connection'
 import { Play, Loader2, Check, X } from 'lucide-react'
 
-declare const __MIMO_PORT__: number | null
-
 interface EnvStatus {
   node: string
   mimo: string

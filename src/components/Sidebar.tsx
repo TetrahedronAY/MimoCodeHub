@@ -52,7 +52,7 @@ export default function Sidebar() {
             M
           </div>
           <h1 className="font-ui text-[13px] font-bold tracking-tight text-text-1">MimoCode</h1>
-          <span className="ml-auto text-[10px] text-text-3 font-normal">0.1.0</span>
+          <span className="ml-auto text-[10px] text-text-3 font-normal">{__APP_VERSION__}</span>
         </div>
 
         {/* Connection status */}

@@ -5,6 +5,7 @@ import { execSync } from 'child_process'
 import { readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { mimoServePlugin } from './vite-plugin-mimo-serve'
+import pkg from './package.json' with { type: 'json' }
 
 function detectMimoPort(): number | null {
   // 1. Try log files
@@ -51,5 +52,6 @@ export default defineConfig({
   },
   define: {
     __MIMO_PORT__: JSON.stringify(mimoPort),
+    __APP_VERSION__: JSON.stringify(pkg.version),
   },
 })
