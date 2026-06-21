@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Check, Copy } from 'lucide-react'
 import type { Components } from 'react-markdown'
 
@@ -8,10 +8,19 @@ interface Props {
   text: string
 }
 
-function CodeBlock({ className, children }: { className?: string; children?: React.ReactNode }) {
+function CodeBlockPre({ children }: { children?: ReactNode }) {
   const [copied, setCopied] = useState(false)
-  const code = String(children).replace(/\n$/, '')
-  const isInline = !className
+
+  // Extract code content and language from child <code>
+  let code = ''
+  let lang = ''
+  const child = children as React.ReactElement<{ className?: string; children?: ReactNode }> | undefined
+  if (child && typeof child === 'object' && 'props' in child) {
+    code = String(child.props.children || '').replace(/\n$/, '')
+    lang = child.props.className?.toString().replace('language-', '') || ''
+  } else {
+    code = String(children || '').replace(/\n$/, '')
+  }
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code)
@@ -19,14 +28,15 @@ function CodeBlock({ className, children }: { className?: string; children?: Rea
     setTimeout(() => setCopied(false), 2000)
   }
 
-  if (isInline) {
-    return <code className={className}>{children}</code>
+  // Inline code (no language) — render as plain pre > code
+  if (!lang) {
+    return <pre className="bg-bg-1 border border-border p-3 overflow-x-auto m-0"><code>{children}</code></pre>
   }
 
   return (
     <div className="relative group my-2">
       <div className="flex items-center justify-between px-3 py-1 bg-bg-3 border border-border border-b-0 text-[9px] text-text-3">
-        <span>{className?.toString().replace('language-', '') || ''}</span>
+        <span>{lang}</span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 px-1.5 py-0.5 text-text-3 hover:text-text-1 transition-colors bg-transparent border-0 cursor-pointer"
@@ -35,14 +45,14 @@ function CodeBlock({ className, children }: { className?: string; children?: Rea
         </button>
       </div>
       <pre className="bg-bg-1 border border-border p-3 overflow-x-auto m-0">
-        <code className={className}>{children}</code>
+        {children}
       </pre>
     </div>
   )
 }
 
 const components: Components = {
-  code: CodeBlock as Components['code'],
+  pre: CodeBlockPre as Components['pre'],
 }
 
 export default function TextPart({ text }: Props) {
