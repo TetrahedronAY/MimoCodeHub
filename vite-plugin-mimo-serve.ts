@@ -1,8 +1,17 @@
 import { spawn, execSync, type ChildProcess } from 'child_process'
+import { readFileSync } from 'fs'
 import type { Plugin } from 'vite'
+import { join } from 'path'
 
 let mimoProcess: ChildProcess | null = null
 let mimoPort = 0
+
+function getPackageVersion(): string {
+  try {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'))
+    return pkg.version || '0.0.0'
+  } catch { return '0.0.0' }
+}
 
 export function mimoServePlugin(): Plugin {
   return {
@@ -182,6 +191,36 @@ export function mimoServePlugin(): Plugin {
         } else {
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ ok: true, message: 'Not running' }))
+        }
+      })
+
+      // Version check: local mimo vs npm latest
+      server.middlewares.use('/api/check-mimo-version', (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        let local = ''
+        try { local = execSync('mimo --version', { encoding: 'utf-8', timeout: 3000 }).trim() } catch { /* ignore */ }
+        let latest = ''
+        try {
+          const info = execSync('npm view @mimo-ai/cli version', { encoding: 'utf-8', timeout: 5000 }).trim()
+          latest = info
+        } catch { /* ignore */ }
+        res.end(JSON.stringify({ local, latest, updateAvailable: local && latest && local !== latest }))
+      })
+
+      // Version check: MimoCodeHub latest release from GitHub
+      server.middlewares.use('/api/check-hub-version', (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        const current = getPackageVersion()
+        try {
+          const data = execSync('curl -s https://api.github.com/repos/TetrahedronAY/MimoCodeHub/releases/latest', {
+            encoding: 'utf-8',
+            timeout: 5000,
+          })
+          const release = JSON.parse(data)
+          const latest = (release.tag_name || '').replace('v', '')
+          res.end(JSON.stringify({ current, latest, updateAvailable: current !== latest }))
+        } catch {
+          res.end(JSON.stringify({ current, latest: '', updateAvailable: false }))
         }
       })
     },

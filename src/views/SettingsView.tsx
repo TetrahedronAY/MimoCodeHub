@@ -20,6 +20,9 @@ export default function SettingsView() {
       {/* Appearance */}
       <AppearanceSection />
 
+      {/* Version */}
+      <VersionSection />
+
       {/* Connection */}
       <Section title="Connection">
         <Row label="Server" value={serverURL.replace(/^https?:\/\//, '')} />
@@ -127,26 +130,65 @@ function Row({
   label,
   value,
   badge,
+  update,
 }: {
   label: React.ReactNode
   value: string
   badge?: 'active' | 'error'
+  update?: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-1.5 border-b border-border last:border-0">
-      <span className="text-[11px] text-text-2 shrink-0">{label}</span>
-      <div className="flex items-center gap-2 min-w-0">
-        {badge && (
-          <span className={`text-[9px] px-1.5 py-[2px] border shrink-0 ${
-            badge === 'active' ? 'border-accent text-accent' : 'border-red text-red'
-          }`}>
-            {value}
-          </span>
-        )}
-        {!badge && (
-          <span className="text-[11px] text-text-1 font-code text-right break-words">{value}</span>
-        )}
+    <div className="py-1.5 border-b border-border last:border-0">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-[11px] text-text-2 shrink-0">{label}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          {badge && (
+            <span className={`text-[9px] px-1.5 py-[2px] border shrink-0 ${
+              badge === 'active' ? 'border-accent text-accent' : 'border-red text-red'
+            }`}>
+              {value}
+            </span>
+          )}
+          {!badge && (
+            <span className="text-[11px] text-text-1 font-code text-right break-words">{value}</span>
+          )}
+        </div>
       </div>
+      {update && (
+        <div className="mt-1 text-[10px] text-amber">{update}</div>
+      )}
     </div>
+  )
+}
+
+function VersionSection() {
+  const [mimo, setMimo] = useState<{ local: string; latest: string; updateAvailable: boolean } | null>(null)
+  const [hub, setHub] = useState<{ current: string; latest: string; updateAvailable: boolean } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/check-mimo-version').then(r => r.json()).then(setMimo).catch(() => {})
+    fetch('/api/check-hub-version').then(r => r.json()).then(setHub).catch(() => {})
+  }, [])
+
+  return (
+    <Section title="Version">
+      {mimo && (
+        <Row
+          label="MimoCode CLI"
+          value={mimo.local || 'Not installed'}
+          update={mimo.updateAvailable ? `v${mimo.latest} available — run npm update -g @mimo-ai/cli` : undefined}
+        />
+      )}
+      {hub && (
+        <Row
+          label="MimoCodeHub"
+          value={`v${hub.current}`}
+          update={hub.updateAvailable ? `v${hub.latest} available — download from GitHub Releases` : undefined}
+        />
+      )}
+      {!mimo && !hub && (
+        <div className="text-[11px] text-text-3 py-1.5">Loading version info...</div>
+      )}
+    </Section>
   )
 }
