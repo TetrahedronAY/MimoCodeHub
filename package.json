@@ -1,6 +1,6 @@
 {
   "name": "mimocodehub",
-  "version": "0.2.1",
+  "version": "0.3.3",
   "type": "module",
   "description": "Full-featured WebUI for MimoCode CLI",
   "author": "TetrahedronAY <895812718@qq.com>",
