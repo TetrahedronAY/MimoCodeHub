@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useConnectionStore, MIN_MIMO_VERSION } from '../store/connection'
 import { useThemeStore, themes, accentColors } from '../store/theme'
+import { useI18n } from '../i18n'
 import { getConfig, getAgents } from '../api/client'
 import type { Config, Agent } from '../api/types'
 
@@ -8,6 +9,7 @@ export default function SettingsView() {
   const { connected, serverURL } = useConnectionStore()
   const [config, setConfig] = useState<Config | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
+  const { t } = useI18n()
 
   useEffect(() => {
     if (!connected) return
@@ -17,6 +19,9 @@ export default function SettingsView() {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 max-w-2xl">
+      {/* Language */}
+      <LanguageSection />
+
       {/* Appearance */}
       <AppearanceSection />
 
@@ -24,18 +29,18 @@ export default function SettingsView() {
       <VersionSection />
 
       {/* Connection */}
-      <Section title="Connection">
-        <Row label="Server" value={serverURL.replace(/^https?:\/\//, '')} />
+      <Section title={t('settings.connection')}>
+        <Row label={t('settings.server')} value={serverURL.replace(/^https?:\/\//, '')} />
         <Row
-          label="Status"
-          value={connected ? 'Connected' : 'Disconnected'}
+          label={t('settings.status')}
+          value={connected ? t('sidebar.connected') : t('sidebar.disconnected')}
           badge={connected ? 'active' : 'error'}
         />
       </Section>
 
       {/* Providers */}
       {config?.provider && typeof config.provider === 'object' && (
-        <Section title="Providers">
+        <Section title={t('settings.providers')}>
           {Object.entries(config.provider as Record<string, { name?: string; models?: Record<string, unknown> }>).map(([id, p]) => (
             <Row key={id} label={p.name || id} value={`${Object.keys(p.models || {}).length} models`} />
           ))}
@@ -44,7 +49,7 @@ export default function SettingsView() {
 
       {/* Agents */}
       {agents.length > 0 && (
-        <Section title="Agents">
+        <Section title={t('settings.agents')}>
           {agents.filter((a) => ['build', 'plan', 'compose'].includes(a.name)).map((a) => (
             <Row
               key={a.name}
@@ -62,7 +67,7 @@ export default function SettingsView() {
 
       {/* User */}
       {config?.username && (
-        <Section title="Account">
+        <Section title={t('settings.account')}>
           <Row label="Username" value={config.username} />
         </Section>
       )}
@@ -256,6 +261,33 @@ function VersionSection() {
         </div>
       )}
       {!mimo && !hub && <div className="text-[11px] text-text-3 py-1.5">Loading version info...</div>}
+    </Section>
+  )
+}
+
+function LanguageSection() {
+  const { locale, setLocale, t } = useI18n()
+
+  return (
+    <Section title={t('settings.language')}>
+      <div className="flex items-center justify-between py-1.5 border-b border-border">
+        <span className="text-[11px] text-text-2">{t('settings.language')}</span>
+        <div className="flex gap-1">
+          {([['en', 'English'], ['zh', '中文']] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setLocale(id)}
+              className={`px-2 py-[3px] text-[10px] font-mono border cursor-pointer transition-colors ${
+                locale === id
+                  ? 'border-accent text-accent bg-accent-dim'
+                  : 'border-border text-text-3 bg-transparent hover:border-border-bright hover:text-text-2'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
     </Section>
   )
 }
