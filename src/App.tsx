@@ -31,12 +31,26 @@ export default function App() {
   const { messages, streaming, fetchMessages } = useMessageStore()
   const chatEndRef = useRef<HTMLDivElement>(null)
   const chatAreaRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
 
   const scrollToBottom = useCallback(() => {
+    if (!isAtBottomRef.current) return
     requestAnimationFrame(() => {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     })
   }, [])
+
+  // Track scroll position
+  useEffect(() => {
+    const el = chatAreaRef.current
+    if (!el) return
+    const handleScroll = () => {
+      const threshold = 80
+      isAtBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < threshold
+    }
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [activeView])
 
   useEffect(() => {
     if (connected) fetchSessions()
