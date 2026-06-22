@@ -124,14 +124,37 @@ export default function App() {
                   <span className="text-[10px] opacity-60">Press ⌘K to create a new session</span>
                 </div>
               ) : currentMessages.length === 0 && !currentStream ? (
-                <div className="flex flex-col items-center justify-center h-full gap-3 text-text-3">
-                  <div className="w-8 h-8 bg-accent flex items-center justify-center font-code text-sm font-bold text-bg-0">M</div>
-                  <span className="font-ui text-[13px] font-medium">
+                <div className="flex flex-col items-center justify-center h-full gap-5 text-text-3 px-5">
+                  <div className="w-10 h-10 bg-accent flex items-center justify-center font-code text-base font-bold text-bg-0">M</div>
+                  <span className="font-ui text-[14px] font-medium text-text-2">
                     {currentSession?.title && !currentSession.title.startsWith('New session')
                       ? currentSession.title
-                      : 'New Session'}
+                      : '开始对话'}
                   </span>
-                  <span className="text-[10px] opacity-60">Send a message to start</span>
+                  <div className="grid grid-cols-2 gap-2 max-w-[400px] w-full">
+                    {[
+                      { text: '解释这段代码的作用', icon: '📖' },
+                      { text: '帮我调试这个错误', icon: '🔧' },
+                      { text: '为这个函数写单元测试', icon: '✅' },
+                      { text: '优化这段代码的性能', icon: '⚡' },
+                    ].map((item) => (
+                      <button
+                        key={item.text}
+                        onClick={() => {
+                          const input = document.querySelector('textarea')
+                          if (input) {
+                            input.value = item.text
+                            input.dispatchEvent(new Event('input', { bubbles: true }))
+                            input.focus()
+                          }
+                        }}
+                        className="flex items-center gap-2 px-3 py-2.5 bg-bg-2 border border-border text-left text-[11px] text-text-2 cursor-pointer hover:border-border-bright hover:bg-bg-3 transition-colors"
+                      >
+                        <span className="text-sm">{item.icon}</span>
+                        <span>{item.text}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div ref={chatAreaRef} className="max-w-3xl mx-auto px-5">
