@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useConnectionStore } from '../store/connection'
+import { useConnectionStore, MIN_MIMO_VERSION } from '../store/connection'
 import { useThemeStore, themes, accentColors } from '../store/theme'
 import { getConfig, getAgents } from '../api/client'
 import type { Config, Agent } from '../api/types'
@@ -211,7 +211,10 @@ function VersionSection() {
           <div className="flex items-center justify-between gap-4">
             <span className="text-[11px] text-text-2 shrink-0">MimoCode CLI</span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-text-1 font-code">{mimo.local || 'Not installed'}</span>
+              <span className="text-[11px] text-text-1 font-code">
+                {mimo.local || 'Not installed'}
+                <span className="text-[9px] text-text-3 ml-1.5">requires ≥v{MIN_MIMO_VERSION}</span>
+              </span>
               {mimo.updateAvailable && (
                 <button
                   onClick={() => runUpdate('mimo')}
@@ -230,7 +233,10 @@ function VersionSection() {
           <div className="flex items-center justify-between gap-4">
             <span className="text-[11px] text-text-2 shrink-0">MimoCodeHub</span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-text-1 font-code">v{hub.current}</span>
+              <span className="text-[11px] text-text-1 font-code">
+                v{hub.current}
+                <span className="text-[9px] text-text-3 ml-1.5">requires MimoCode ≥v{MIN_MIMO_VERSION}</span>
+              </span>
               {hub.updateAvailable && (
                 <button
                   onClick={() => runUpdate('hub')}

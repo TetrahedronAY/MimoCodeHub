@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import ConnectionDialog from './components/ConnectionDialog'
 import ContextMenu from './components/ContextMenu'
+import UpdateNotification from './components/UpdateNotification'
 import MessageItem from './features/chat/MessageItem'
 import MessageInput from './features/chat/MessageInput'
 import StatsView from './views/StatsView'
@@ -214,6 +215,7 @@ export default function App() {
       </main>
       <ConnectionDialog />
       <ContextMenu />
+      <UpdateNotification />
     </div>
   )
 }
