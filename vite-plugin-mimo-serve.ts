@@ -223,6 +223,51 @@ export function mimoServePlugin(): Plugin {
           res.end(JSON.stringify({ current, latest: '', updateAvailable: false }))
         }
       })
+
+      // Update MimoCode CLI
+      server.middlewares.use('/api/update-mimo', (req, res) => {
+        if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
+        res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
+        const send = (msg: string) => res.write(`data: ${JSON.stringify({ message: msg })}\n\n`)
+
+        send('Updating @mimo-ai/cli...')
+        const proc = spawn('npm', ['install', '-g', '@mimo-ai/cli@latest'], { stdio: ['ignore', 'pipe', 'pipe'] })
+        proc.stdout?.on('data', (c: Buffer) => send(c.toString().trim()))
+        proc.stderr?.on('data', (c: Buffer) => send(c.toString().trim()))
+        proc.on('close', (code) => {
+          if (code === 0) { send('MimoCode CLI updated successfully!'); res.write(`data: ${JSON.stringify({ ok: true })}\n\n`) }
+          else { send(`Update failed (exit code ${code})`); res.write(`data: ${JSON.stringify({ ok: false })}\n\n`) }
+          res.end()
+        })
+        proc.on('error', (err) => { send(`Error: ${err.message}`); res.write(`data: ${JSON.stringify({ ok: false })}\n\n`); res.end() })
+      })
+
+      // Update MimoCodeHub (download latest release zip)
+      server.middlewares.use('/api/update-hub', (req, res) => {
+        if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
+        res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
+        const send = (msg: string) => res.write(`data: ${JSON.stringify({ message: msg })}\n\n`)
+
+        send('Checking latest release...')
+        try {
+          const data = execSync('curl -s https://api.github.com/repos/TetrahedronAY/MimoCodeHub/releases/latest', { encoding: 'utf-8', timeout: 5000 })
+          const release = JSON.parse(data)
+          const zipAsset = (release.assets || []).find((a: { name: string }) => a.name === 'mimocodehub.zip')
+          if (!zipAsset) { send('No zip asset found'); res.write(`data: ${JSON.stringify({ ok: false })}\n\n`); res.end(); return }
+
+          send(`Downloading v${release.tag_name}...`)
+          const distDir = join(process.cwd(), 'dist')
+          execSync(`curl -sL ${zipAsset.browser_download_url} -o /tmp/mimocodehub.zip`, { timeout: 30000 })
+          send('Extracting...')
+          execSync(`cd ${distDir} && unzip -o /tmp/mimocodehub.zip`, { timeout: 10000 })
+          send('MimoCodeHub updated! Refresh the page to use the new version.')
+          res.write(`data: ${JSON.stringify({ ok: true })}\n\n`)
+        } catch (err) {
+          send(`Update failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+          res.write(`data: ${JSON.stringify({ ok: false })}\n\n`)
+        }
+        res.end()
+      })
     },
   }
 }

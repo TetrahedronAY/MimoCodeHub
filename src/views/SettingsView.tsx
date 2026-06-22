@@ -164,31 +164,92 @@ function Row({
 function VersionSection() {
   const [mimo, setMimo] = useState<{ local: string; latest: string; updateAvailable: boolean } | null>(null)
   const [hub, setHub] = useState<{ current: string; latest: string; updateAvailable: boolean } | null>(null)
+  const [updating, setUpdating] = useState<'mimo' | 'hub' | null>(null)
+  const [logs, setLogs] = useState<string[]>([])
 
   useEffect(() => {
     fetch('/api/check-mimo-version').then(r => r.json()).then(setMimo).catch(() => {})
     fetch('/api/check-hub-version').then(r => r.json()).then(setHub).catch(() => {})
   }, [])
 
+  const runUpdate = async (type: 'mimo' | 'hub') => {
+    setUpdating(type)
+    setLogs([])
+    try {
+      const res = await fetch(`/api/update-${type}`, { method: 'POST' })
+      const reader = res.body?.getReader()
+      if (!reader) return
+      const decoder = new TextDecoder()
+      let buffer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              if (data.message) setLogs((prev) => [...prev, data.message])
+              if (data.ok) {
+                if (type === 'mimo') fetch('/api/check-mimo-version').then(r => r.json()).then(setMimo)
+                else fetch('/api/check-hub-version').then(r => r.json()).then(setHub)
+              }
+            } catch { /* ignore */ }
+          }
+        }
+      }
+    } catch { setLogs(['Update failed']) }
+    finally { setUpdating(null) }
+  }
+
   return (
     <Section title="Version">
       {mimo && (
-        <Row
-          label="MimoCode CLI"
-          value={mimo.local || 'Not installed'}
-          update={mimo.updateAvailable ? `v${mimo.latest} available — run npm update -g @mimo-ai/cli` : undefined}
-        />
+        <div className="py-1.5 border-b border-border">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[11px] text-text-2 shrink-0">MimoCode CLI</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-text-1 font-code">{mimo.local || 'Not installed'}</span>
+              {mimo.updateAvailable && (
+                <button
+                  onClick={() => runUpdate('mimo')}
+                  disabled={!!updating}
+                  className="text-[9px] px-1.5 py-0.5 bg-amber/20 text-amber border border-amber/30 cursor-pointer font-mono hover:bg-amber/30 disabled:opacity-40"
+                >
+                  {updating === 'mimo' ? 'Updating...' : `Update to v${mimo.latest}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
       {hub && (
-        <Row
-          label="MimoCodeHub"
-          value={`v${hub.current}`}
-          update={hub.updateAvailable ? `v${hub.latest} available — download from GitHub Releases` : undefined}
-        />
+        <div className="py-1.5 border-b border-border">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[11px] text-text-2 shrink-0">MimoCodeHub</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-text-1 font-code">v{hub.current}</span>
+              {hub.updateAvailable && (
+                <button
+                  onClick={() => runUpdate('hub')}
+                  disabled={!!updating}
+                  className="text-[9px] px-1.5 py-0.5 bg-amber/20 text-amber border border-amber/30 cursor-pointer font-mono hover:bg-amber/30 disabled:opacity-40"
+                >
+                  {updating === 'hub' ? 'Updating...' : `Update to v${hub.latest}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
-      {!mimo && !hub && (
-        <div className="text-[11px] text-text-3 py-1.5">Loading version info...</div>
+      {logs.length > 0 && (
+        <div className="mt-1 bg-bg-2 border border-border p-2 max-h-[60px] overflow-y-auto">
+          {logs.map((log, i) => <div key={i} className="text-[9px] text-text-3 font-code">{log}</div>)}
+        </div>
       )}
+      {!mimo && !hub && <div className="text-[11px] text-text-3 py-1.5">Loading version info...</div>}
     </Section>
   )
 }
