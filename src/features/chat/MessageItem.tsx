@@ -16,7 +16,14 @@ const roleStyles: Record<string, string> = {
 }
 
 function formatTime(time: { created: number; completed?: number }): string {
-  return new Date(time.created).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  const d = new Date(time.created)
+  const now = new Date()
+  const isToday = d.toDateString() === now.toDateString()
+  if (isToday) {
+    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  }
+  return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) + ' ' +
+    d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
 function formatTokens(tokens?: { input: number; output: number }): string {
