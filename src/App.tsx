@@ -9,7 +9,7 @@ import MessageItem from './features/chat/MessageItem'
 import MessageInput from './features/chat/MessageInput'
 import StatsView from './views/StatsView'
 import SettingsView from './views/SettingsView'
-import { useConnectionStore } from './store/connection'
+import { useConnectionStore, MIN_MIMO_VERSION } from './store/connection'
 import { useSessionStore } from './store/session'
 import { useUIStore } from './store/ui'
 import { useMessageStore } from './store/message'
@@ -25,7 +25,7 @@ function StreamingMarkdown({ text }: { text: string }) {
 }
 
 export default function App() {
-  const { connected } = useConnectionStore()
+  const { connected, versionCompatible, backendVersion } = useConnectionStore()
   const { sessions, currentID, fetchSessions } = useSessionStore()
   const { activeView } = useUIStore()
   const { messages, streaming, fetchMessages } = useMessageStore()
@@ -127,6 +127,12 @@ export default function App() {
       <Sidebar />
       <main className="flex-1 flex flex-col min-w-0 bg-bg-0">
         <Header />
+        {!versionCompatible && backendVersion && (
+          <div className="bg-amber/10 border-b border-amber/30 px-4 py-2 text-[11px] text-amber flex items-center gap-2">
+            <span>⚠</span>
+            <span>MimoCode v{backendVersion} is below the recommended minimum (v{MIN_MIMO_VERSION}). Some features may not work correctly.</span>
+          </div>
+        )}
 
         {activeView === 'chat' && (
           <div className="flex-1 flex flex-col min-h-0">
