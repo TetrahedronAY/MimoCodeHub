@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { useSessionStore } from '../store/session'
 import { useUIStore } from '../store/ui'
 import { useConnectionStore } from '../store/connection'
-import { Plus } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { showContextMenu } from './ContextMenu'
 import type { AgentID } from '../store/ui'
 
@@ -33,6 +34,11 @@ export default function Sidebar() {
   const { sessions, currentID, selectSession, createSession, fetchSessions } = useSessionStore()
   const { connected, serverURL } = useConnectionStore()
   const { setView } = useUIStore()
+  const [search, setSearch] = useState('')
+
+  const filtered = search
+    ? sessions.filter((s) => s.title?.toLowerCase().includes(search.toLowerCase()))
+    : sessions
 
   const handleNewSession = async () => {
     try {
@@ -77,10 +83,21 @@ export default function Sidebar() {
 
       {/* Session list */}
       <div className="flex-1 overflow-y-auto py-1">
-        <div className="px-3.5 pt-2 pb-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-text-3 font-ui">
-          Sessions
+        <div className="px-3.5 pt-2 pb-0.5 flex items-center gap-2">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-text-3 font-ui">Sessions</span>
         </div>
-        {sessions.map((s) => (
+        <div className="px-3.5 pb-1">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-bg-2 border border-border">
+            <Search size={10} className="text-text-3 shrink-0" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="flex-1 bg-transparent border-none outline-none text-[11px] text-text-1 placeholder:text-text-3 font-mono"
+            />
+          </div>
+        </div>
+        {filtered.map((s) => (
           <button
             key={s.id}
             onClick={() => { selectSession(s.id); setView('chat') }}
@@ -145,7 +162,7 @@ export default function Sidebar() {
             </div>
           </button>
         ))}
-        {sessions.length === 0 && (
+        {filtered.length === 0 && (
           <div className="px-3.5 py-4 text-[10px] text-text-3">No sessions</div>
         )}
       </div>
