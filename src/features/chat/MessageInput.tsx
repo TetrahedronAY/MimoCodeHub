@@ -42,7 +42,7 @@ export default function MessageInput() {
       const res = await fetch(`${base}/session/${currentID}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: msg, agent: activeAgent }),
+        body: JSON.stringify({ parts: [{ type: 'text', text: msg }] }),
       })
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
