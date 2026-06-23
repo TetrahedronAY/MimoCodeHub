@@ -1,10 +1,40 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 
+// Maximum MimoCode CLI version supported by each MimoCodeHub version
+// When updating MimoCodeHub, bump this value to match the new compatibility range
+const HUB_MAX_MIMO_VERSION: Record<string, string> = {
+  '0.5.0': '0.1.2',
+  '0.4.3': '0.1.2',
+  '0.4.2': '0.1.2',
+  '0.4.1': '0.1.2',
+  '0.4.0': '0.1.2',
+  '0.3.2': '0.1.1',
+  '0.3.1': '0.1.1',
+  '0.3.0': '0.1.1',
+  '0.2.1': '0.1.1',
+  '0.2.0': '0.1.1',
+  '0.1.1': '0.1.0',
+  '0.1.0': '0.1.0',
+}
+
+function isMimoCompatible(hubVersion: string, mimoVersion: string): boolean {
+  const maxSupported = HUB_MAX_MIMO_VERSION[hubVersion]
+  if (!maxSupported) return true // unknown hub version, allow
+  const [a, b, c] = mimoVersion.split('.').map(Number)
+  const [x, y, z] = maxSupported.split('.').map(Number)
+  if (a! > x!) return false
+  if (a! < x!) return true
+  if (b! > y!) return false
+  if (b! < y!) return true
+  return (c || 0) <= (z || 0)
+}
+
 interface VersionInfo {
   mimoLocal: string
   mimoLatest: string
   mimoUpdate: boolean
+  mimoCompatible: boolean
   hubCurrent: string
   hubLatest: string
   hubUpdate: boolean
@@ -22,13 +52,21 @@ export default function UpdateNotification() {
           fetch('/api/check-mimo-version').then(r => r.json()).catch(() => ({})),
           fetch('/api/check-hub-version').then(r => r.json()).catch(() => ({})),
         ])
-        const hasUpdate = mimoRes.updateAvailable || hubRes.updateAvailable
+        const hubVersion = hubRes.current || '0.0.0'
+        const mimoLatest = mimoRes.latest || ''
+        const mimoCompatible = isMimoCompatible(hubVersion, mimoLatest)
+
+        // Only show mimo update if compatible with current hub version
+        const mimoUpdate = mimoRes.updateAvailable && mimoCompatible
+        const hasUpdate = mimoUpdate || hubRes.updateAvailable
+
         if (hasUpdate) {
           setInfo({
             mimoLocal: mimoRes.local || '',
-            mimoLatest: mimoRes.latest || '',
-            mimoUpdate: mimoRes.updateAvailable || false,
-            hubCurrent: hubRes.current || '',
+            mimoLatest,
+            mimoUpdate,
+            mimoCompatible,
+            hubCurrent: hubVersion,
             hubLatest: hubRes.latest || '',
             hubUpdate: hubRes.updateAvailable || false,
           })
@@ -103,7 +141,30 @@ export default function UpdateNotification() {
           </div>
         )}
 
-        {info.hubUpdate && (
+        {/* Show warning if mimo has update but hub doesn't support it yet */}
+        {!info.mimoUpdate && info.hubUpdate && (
+          <div className="mb-3 p-2.5 bg-bg-2 border border-amber/30">
+            <div className="text-[10px] text-amber mb-1">
+              MimoCode CLI v{info.mimoLatest} is available but requires MimoCodeHub update first.
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-text-2">MimoCodeHub</span>
+              <span className="text-[11px] font-code text-text-1">
+                v{info.hubCurrent} → <span className="text-accent">v{info.hubLatest}</span>
+              </span>
+            </div>
+            <button
+              onClick={() => runUpdate('hub')}
+              disabled={!!updating}
+              className="mt-2 w-full py-1.5 bg-accent text-bg-0 text-[11px] font-mono font-bold border-0 cursor-pointer hover:opacity-85 disabled:opacity-40"
+            >
+              {updating === 'hub' ? 'Updating...' : 'Update MimoCodeHub'}
+            </button>
+          </div>
+        )}
+
+        {/* Only show hub update if mimo is already compatible */}
+        {info.hubUpdate && info.mimoUpdate && (
           <div className="mb-3 p-2.5 bg-bg-2 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-text-2">MimoCodeHub</span>
