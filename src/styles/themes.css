@@ -91,6 +91,77 @@
   --color-surface: #21222c;
 }
 
+[data-theme="nord"] {
+  --color-bg-0: #2e3440;
+  --color-bg-1: #272c36;
+  --color-bg-2: #3b4252;
+  --color-bg-3: #434c5e;
+  --color-bg-4: #4c566a;
+  --color-accent: #a3be8c;
+  --color-accent-dim: #a3be8c33;
+  --color-accent-mid: #a3be8c66;
+  --color-green: #a3be8c;
+  --color-amber: #ebcb8b;
+  --color-red: #bf616a;
+  --color-blue: #81a1c1;
+  --color-purple: #b48ead;
+  --color-text-1: #eceff4;
+  --color-text-2: #d8dee9;
+  --color-text-3: #4c566a;
+  --color-border: #3b4252;
+  --color-border-bright: #434c5e;
+  --color-surface: #272c36;
+}
+
+[data-theme="tokyonight"] {
+  --color-bg-0: #1a1b26;
+  --color-bg-1: #16161e;
+  --color-bg-2: #24283b;
+  --color-bg-3: #292e42;
+  --color-bg-4: #3b4261;
+  --color-accent: #9ece6a;
+  --color-accent-dim: #9ece6a33;
+  --color-accent-mid: #9ece6a66;
+  --color-green: #9ece6a;
+  --color-amber: #e0af68;
+  --color-red: #f7768e;
+  --color-blue: #7aa2f7;
+  --color-purple: #bb9af7;
+  --color-text-1: #c0caf5;
+  --color-text-2: #a9b1d6;
+  --color-text-3: #565f89;
+  --color-border: #24283b;
+  --color-border-bright: #292e42;
+  --color-surface: #16161e;
+}
+
+[data-theme="gruvbox"] {
+  --color-bg-0: #282828;
+  --color-bg-1: #1d2021;
+  --color-bg-2: #3c3836;
+  --color-bg-3: #504945;
+  --color-bg-4: #665c54;
+  --color-accent: #b8bb26;
+  --color-accent-dim: #b8bb2633;
+  --color-accent-mid: #b8bb2666;
+  --color-green: #b8bb26;
+  --color-amber: #fabd2f;
+  --color-red: #fb4934;
+  --color-blue: #83a598;
+  --color-purple: #d3869b;
+  --color-text-1: #ebdbb2;
+  --color-text-2: #d5c4a1;
+  --color-text-3: #665c54;
+  --color-border: #3c3836;
+  --color-border-bright: #504945;
+  --color-surface: #1d2021;
+}
+
+/* Custom theme — values set via inline style on :root */
+[data-theme="custom"] {
+  /* Fallback to dark if custom values not set */
+}
+
 /* Accent color overrides */
 [data-accent="green"]  { --color-accent: #b4f04e; --color-accent-dim: #b4f04e33; --color-accent-mid: #b4f04e66; }
 [data-accent="blue"]   { --color-accent: #5e9ef0; --color-accent-dim: #5e9ef033; --color-accent-mid: #5e9ef066; }

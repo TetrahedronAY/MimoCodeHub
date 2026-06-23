@@ -26,7 +26,7 @@ function StreamingMarkdown({ text }: { text: string }) {
 }
 
 export default function App() {
-  const { connected, versionCompatible, backendVersion } = useConnectionStore()
+  const { connected, versionCompatible, backendVersion, probeResult } = useConnectionStore()
   const { sessions, currentID, fetchSessions } = useSessionStore()
   const { activeView } = useUIStore()
   const { messages, streaming, fetchMessages } = useMessageStore()
@@ -132,6 +132,23 @@ export default function App() {
           <div className="bg-amber/10 border-b border-amber/30 px-4 py-2 text-[11px] text-amber flex items-center gap-2">
             <span>⚠</span>
             <span>MimoCode v{backendVersion} is below the recommended minimum (v{MIN_MIMO_VERSION}). Some features may not work correctly.</span>
+          </div>
+        )}
+        {probeResult && probeResult.compatible === 'degraded' && (
+          <div className="bg-amber/10 border-b border-amber/30 px-4 py-2 text-[11px] text-amber flex items-center gap-2">
+            <span>⚠</span>
+            <span>
+              Some API endpoints are not responding correctly.{' '}
+              {probeResult.capabilities.filter((c) => c.required && !c.ok).map((c) => c.label).join(', ')} may be unavailable.
+            </span>
+          </div>
+        )}
+        {probeResult && probeResult.compatible === 'incompatible' && (
+          <div className="bg-red/10 border-b border-red/30 px-4 py-2 text-[11px] text-red flex items-center gap-2">
+            <span>✕</span>
+            <span>
+              Backend is incompatible. Critical API endpoints are not responding. Please update MimoCode CLI.
+            </span>
           </div>
         )}
 

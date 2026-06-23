@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { setBaseURL, getBaseURL, checkConnection } from '../api/client'
+import { probeCapabilities, type ProbeResult } from '../api/capabilities'
 
 export const MIN_MIMO_VERSION = '0.1.0'
 
@@ -9,6 +10,7 @@ interface ConnectionState {
   connecting: boolean
   backendVersion: string
   versionCompatible: boolean
+  probeResult: ProbeResult | null
   connect: (url: string) => Promise<void>
   disconnect: () => void
   reconnect: () => Promise<void>
@@ -32,6 +34,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   connecting: false,
   backendVersion: '',
   versionCompatible: true,
+  probeResult: null,
 
   connect: async (url: string) => {
     set({ connecting: true })
@@ -39,7 +42,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     const ok = await checkConnection()
     if (ok) {
       localStorage.setItem('mimocode-server-url', url)
-      // Get backend version from /api/check-env (dev mode) or fallback
+      // Get backend version
       let backendVersion = ''
       try {
         const res = await fetch('/api/check-env')
@@ -47,9 +50,16 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           const env = await res.json()
           backendVersion = env.mimoVersion || ''
         }
-      } catch { /* production mode, no env endpoint */ }
+      } catch { /* production mode */ }
       const compatible = !backendVersion || compareVersions(backendVersion, MIN_MIMO_VERSION) >= 0
-      set({ serverURL: url, connected: true, connecting: false, backendVersion, versionCompatible: compatible })
+
+      // Run capability probes
+      let probeResult: ProbeResult | null = null
+      try {
+        probeResult = await probeCapabilities()
+      } catch { /* ignore probe failures */ }
+
+      set({ serverURL: url, connected: true, connecting: false, backendVersion, versionCompatible: compatible, probeResult })
     } else {
       set({ connected: false, connecting: false })
       throw new Error('Connection failed')
@@ -57,7 +67,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   },
 
   disconnect: () => {
-    set({ connected: false })
+    set({ connected: false, probeResult: null })
   },
 
   reconnect: async () => {

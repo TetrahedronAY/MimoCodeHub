@@ -6,7 +6,7 @@ import { getConfig, getAgents } from '../api/client'
 import type { Config, Agent } from '../api/types'
 
 export default function SettingsView() {
-  const { connected, serverURL } = useConnectionStore()
+  const { connected, serverURL, probeResult } = useConnectionStore()
   const [config, setConfig] = useState<Config | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
   const { t } = useI18n()
@@ -37,6 +37,35 @@ export default function SettingsView() {
           badge={connected ? 'active' : 'error'}
         />
       </Section>
+
+      {/* API Compatibility */}
+      {probeResult && (
+        <Section title="API Compatibility">
+          <div className="flex items-center gap-2 py-1.5 border-b border-border">
+            <span className={`w-[6px] h-[6px] rounded-full shrink-0 ${
+              probeResult.compatible === 'full' ? 'bg-green' :
+              probeResult.compatible === 'degraded' ? 'bg-amber' : 'bg-red'
+            }`} />
+            <span className="text-[11px] text-text-2">
+              {probeResult.compatible === 'full' ? 'All endpoints compatible' :
+               probeResult.compatible === 'degraded' ? 'Partial compatibility' :
+               'Incompatible — critical endpoints failing'}
+            </span>
+          </div>
+          {probeResult.capabilities.map((cap) => (
+            <div key={cap.name} className="flex items-center justify-between py-1 border-b border-border last:border-0">
+              <div className="flex items-center gap-2">
+                <span className={`w-[5px] h-[5px] rounded-full shrink-0 ${cap.ok ? 'bg-green' : cap.required ? 'bg-red' : 'bg-amber'}`} />
+                <span className="text-[11px] text-text-2">{cap.label}</span>
+                {!cap.required && <span className="text-[9px] text-text-3">optional</span>}
+              </div>
+              <span className={`text-[10px] ${cap.ok ? 'text-green' : 'text-red'}`}>
+                {cap.ok ? 'OK' : cap.detail || 'FAIL'}
+              </span>
+            </div>
+          ))}
+        </Section>
+      )}
 
       {/* Providers */}
       {config?.provider && typeof config.provider === 'object' && (
