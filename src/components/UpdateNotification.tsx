@@ -76,8 +76,10 @@ export default function UpdateNotification() {
   if (!info || dismissed) return null
 
   // Determine if mimo update is safe based on probe results
-  const mimoSafe = !probeResult || probeResult.compatible === 'full'
-  const mimoDegraded = probeResult && probeResult.compatible === 'degraded'
+  // probeResult is null when probe hasn't completed yet — don't assume safe
+  const mimoSafe = probeResult !== null && probeResult.compatible === 'full'
+  const mimoDegraded = probeResult !== null && probeResult.compatible === 'degraded'
+  const probePending = probeResult === null
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-0/60 backdrop-blur-sm">
@@ -112,6 +114,11 @@ export default function UpdateNotification() {
             {mimoDegraded && (
               <div className="mt-1.5 text-[9px] text-amber">
                 Some API endpoints may be affected. Update recommended after updating MimoCodeHub.
+              </div>
+            )}
+            {probePending && (
+              <div className="mt-1.5 text-[9px] text-text-3">
+                Checking compatibility...
               </div>
             )}
             <button
